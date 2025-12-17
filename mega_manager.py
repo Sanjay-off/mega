@@ -11,11 +11,9 @@ def download_with_quota_handling():
 
         process = subprocess.run(
             [
-                "megatools", "dl",
-                "--recursive",
-                "--resume",
-                "--path", DOWNLOAD_DIR,
-                MEGA_LINK
+                "mega-get",
+                MEGA_LINK,
+                DOWNLOAD_DIR
             ],
             capture_output=True,
             text=True
@@ -23,8 +21,8 @@ def download_with_quota_handling():
 
         output = (process.stdout + process.stderr).lower()
 
-        if "quota" in output or "transfer" in output:
-            print("MEGA quota reached. Waiting for reset...")
+        if "quota" in output or "exceeded" in output:
+            print("MEGA quota exceeded. Waiting for reset...")
             time.sleep(QUOTA_SLEEP_SECONDS)
             continue
 
