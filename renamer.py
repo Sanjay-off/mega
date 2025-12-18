@@ -7,28 +7,23 @@ IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 def rename_all_files():
     Path(RENAMED_DIR).mkdir(parents=True, exist_ok=True)
 
-    all_files = sorted(
+    files = sorted(
         f for f in Path(DOWNLOAD_DIR).rglob("*")
         if f.suffix.lower() in VIDEO_EXT | IMAGE_EXT
     )
 
-    video_count = 0
-    image_count = 0
+    v = i = 0
 
-    for file in all_files:
-        suffix = file.suffix.lower()
+    for file in files:
+        ext = file.suffix.lower()
+        if ext in VIDEO_EXT:
+            v += 1
+            name = f"{COURSE_NAME}_VIDEO_{v:04d}{ext}"
+        else:
+            i += 1
+            name = f"{COURSE_NAME}_IMAGE_{i:04d}{ext}"
 
-        if suffix in VIDEO_EXT:
-            video_count += 1
-            new_name = f"{COURSE_NAME}_VIDEO_{video_count:04d}{suffix}"
+        file.rename(Path(RENAMED_DIR) / name)
 
-        elif suffix in IMAGE_EXT:
-            image_count += 1
-            new_name = f"{COURSE_NAME}_IMAGE_{image_count:04d}{suffix}"
-
-        target = Path(RENAMED_DIR) / new_name
-        file.rename(target)
-
-    print(f"Renamed {video_count} videos and {image_count} images")
-
-    return video_count + image_count
+    print(f"Renamed {v} videos and {i} images")
+    return v + i

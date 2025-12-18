@@ -1,33 +1,31 @@
-import os
-import pyminizip
+import subprocess
 from pathlib import Path
 from config import (
-    RENAMED_DIR, ZIP_DIR,
+    DOWNLOAD_DIR,
+    ZIP_DIR,
     ZIP_PASSWORD,
     ZIP_PART_SIZE_MB,
-    ZIP_COMPRESSION_LEVEL,
     COURSE_NAME
 )
 
 def create_zip_parts():
     Path(ZIP_DIR).mkdir(parents=True, exist_ok=True)
 
-    files = [str(Path(RENAMED_DIR) / f) for f in os.listdir(RENAMED_DIR)]
+    # Zip base path
+    zip_base = Path(ZIP_DIR) / COURSE_NAME
 
-    pyminizip.compress_multiple(
-        files=files,
-        output_path=ZIP_DIR,
-        password=ZIP_PASSWORD,
-        compression_level=ZIP_COMPRESSION_LEVEL,
-        volume_size=ZIP_PART_SIZE_MB * 1024 * 1024
+    # 7-Zip command preserving folder structure
+    subprocess.run(
+        [
+            "7z", "a",
+            f"{zip_base}.zip",
+            f"{DOWNLOAD_DIR}/*",   # IMPORTANT: zip original structure
+            f"-p{ZIP_PASSWORD}",
+            "-mhe=on",             # encrypt filenames + structure
+            "-mem=AES256",
+            f"-v{ZIP_PART_SIZE_MB}m"
+        ],
+        check=True
     )
 
-    zip_files = sorted(Path(ZIP_DIR).iterdir())
-    final = []
-
-    for i, z in enumerate(zip_files, 1):
-        new = z.with_name(f"{COURSE_NAME}_PART_{i:02d}.zip")
-        z.rename(new)
-        final.append(new)
-
-    return final
+    return sorted(Path(ZIP_DIR).glob("*.zip*"))

@@ -9,24 +9,20 @@ def download_with_quota_handling():
     while True:
         print("Starting / resuming MEGA download...")
 
-        process = subprocess.run(
-            [
-                "mega-get",
-                MEGA_LINK,
-                DOWNLOAD_DIR
-            ],
+        proc = subprocess.run(
+            ["mega-get", MEGA_LINK, DOWNLOAD_DIR],
             capture_output=True,
             text=True
         )
 
-        output = (process.stdout + process.stderr).lower()
+        output = (proc.stdout + proc.stderr).lower()
 
         if "quota" in output or "exceeded" in output:
-            print("MEGA quota exceeded. Waiting for reset...")
+            print("MEGA quota reached. Waiting...")
             time.sleep(QUOTA_SLEEP_SECONDS)
             continue
 
-        if process.returncode == 0:
+        if proc.returncode == 0:
             print("MEGA download completed.")
             break
 
